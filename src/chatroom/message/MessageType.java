@@ -26,5 +26,24 @@ public class MessageType {
 	 * 人员状态
 	 */
 	public  static final String  MESSAGE_TYPE_USERSTAUTS="message_type_userstauts";
+	
+	
+
+	/**
+	 * 进入房间
+	 */
+	public  static final String  MESSAGE_TYPE_ENTERROOM="message_type_enterroom";
+	
+	
+	/**
+	 * 退出房间
+	 */
+	public  static final String  MESSAGE_TYPE_EXITROOM="message_type_exitroom";
+	
+	
+	/**
+	 * 会话关闭
+	 */
+	public  static final String  MESSAGE_TYPE_SESSION_COSLED="message_type_session_closed";
   
 }

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 
@@ -22,6 +23,21 @@ public class Session {
 	private boolean isLogin = false;
     private Session selfSession;
 	private MessageHandler messageHandler = new MessageHandler();
+	
+	private String sessionId=null;
+	
+	public String getSessionId() {
+		return sessionId;
+	}
+
+	public boolean isLogin() {
+		return isLogin;
+	}
+
+	public void setLogin(boolean isLogin) {
+		this.isLogin = isLogin;
+	}
+
 
 	/**
 	 * 每个会话与一个socket对应
@@ -30,6 +46,7 @@ public class Session {
 
 	public Session(Socket socket) {
 		this.client = socket;
+		this.sessionId=UUID.randomUUID().toString();
 		selfSession=this;
 		new ClientHandlerThread();
 	}
@@ -47,6 +64,7 @@ public class Session {
 
 		@Override
 		public void run() {
+			logger.info("【启动一个会话线程】");
 			InputStream inputStream = null;
 			try {
 				inputStream = client.getInputStream();
