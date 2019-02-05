@@ -203,12 +203,26 @@ public class MessageHandler {
 			String type = jo.getString("type");
 
 			switch (type) {
-
+			
+			//登录
 			case MessageType.MESSAGE_TYPE_LOGIN:
 				LoginMessage loginMsg = JSON.toJavaObject(jo, LoginMessage.class);
 				loginMsg.setTimestamp(System.currentTimeMillis());
 				this.login(session, loginMsg);
-
+				break;
+				//进入房间
+			case MessageType.MESSAGE_TYPE_ENTERROOM:
+				EnterRoomMessage enterRoomMsg=  JSON.toJavaObject(jo, EnterRoomMessage.class);
+				enterRoomMsg.setTimestamp(System.currentTimeMillis());
+				this.enterRoom(session, enterRoomMsg);
+				break;
+			//退出房间
+				case MessageType.MESSAGE_TYPE_EXITROOM:
+					ExitRoomMessage exitRoomMsg=  JSON.toJavaObject(jo, ExitRoomMessage.class);
+					exitRoomMsg.setTimestamp(System.currentTimeMillis());
+					this.exitRoom(session, exitRoomMsg);
+					break;
+		    //说话
 			case MessageType.MESSAGE_TYPE_TALK:
 				TalkMessage talkMsg = JSON.toJavaObject(jo, TalkMessage.class);
 				// talkMsg.getTalk().setTimestamp(System.currentTimeMillis());

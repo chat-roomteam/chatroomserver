@@ -26,39 +26,52 @@ public class ClientSocketTest {
 	public User user = null;
 	public String roomId = null;
 
-	public ClientSocketTest() throws UnknownHostException, IOException {
+	public ClientSocketTest(String studentID) throws UnknownHostException, IOException {
 
 		user = new User();
-		user.setId("100");
-		user.setName("于志刚");
-		user.setPassword("2019001");
-		user.setStudentID("2019001");
-
+		if ("2019001".equals(studentID)) {
+			user.setId("100");
+			user.setName("于志刚");
+			user.setPassword("2019001");
+			user.setStudentID("2019001");
+		} else {
+			user.setId("101");
+			user.setName("王刚强");
+			user.setPassword("2019002");
+			user.setStudentID("2019002");
+		}
 	}
 
 	public void test() throws UnknownHostException, IOException {
 
 		socket = new Socket("127.0.0.1", 55533);
 		new ClientReceiveThread();
-		
-		
-		//登录
-		LoginMessage loginMessage=new LoginMessage();
+
+		// 登录
+		LoginMessage loginMessage = new LoginMessage();
 		loginMessage.setId(UUID.randomUUID().toString());
 		loginMessage.setName(user.getName());
 		loginMessage.setStudentID(user.getStudentID());
 		loginMessage.setPassword(user.getPassword());
-		//登录成功
+		// 登录成功
 		this.sendMessage(loginMessage);
-	
-		//登录失败
-		loginMessage.setPassword("");
-	    this.sendMessage(loginMessage);
-			
+
+		// 登录失败
+		//loginMessage.setPassword("");
+		//this.sendMessage(loginMessage);
+
+		// 进入房间
+
 	}
 
 	public static void main(String args[]) throws Exception {
-		ClientSocketTest clientSocketTest = new ClientSocketTest();
+		String studentID="2019001";
+				
+		if(args.length>0)
+			studentID=args[0];
+		
+		ClientSocketTest clientSocketTest = new ClientSocketTest(studentID);
+		
 		clientSocketTest.test();
 	}
 
@@ -76,14 +89,12 @@ public class ClientSocketTest {
 		outputStream.write(msg.jsonByteLen());
 		outputStream.write(msg.jsonBytes());
 		outputStream.flush();
-		
-		logger.info("<客户端发送-->消息> msg=\n"+ msg.toJsonString());
+
+		logger.info("<客户端发送-->消息> msg=\n" + msg.toJsonString());
 
 	}
-	
-	
 
-	// 
+	//
 	private class ClientReceiveThread implements Runnable {
 		public ClientReceiveThread() {
 			new Thread(this).start();
@@ -92,23 +103,22 @@ public class ClientSocketTest {
 		@Override
 		public void run() {
 			try {
-				while(true) {
+				while (true) {
 					receiveMessage();
 				}
 			} catch (IOException e) {
-				logger.error("receiveMessage出错：",e);
+				logger.error("receiveMessage出错：", e);
 			}
-			
+
 		}
 	}
-	
-	
+
 	public boolean receiveMessage() throws IOException {
 		InputStream inputStream = this.socket.getInputStream();
 		int first = inputStream.read();
 		// 如果读取的值为-1 说明到了流的末尾，Socket已经被关闭了，此时将不能再去读取
 		if (first == -1) {
-			//return false;
+			// return false;
 		}
 		int second = inputStream.read();
 		int length = (first << 8) + second;
@@ -118,7 +128,7 @@ public class ClientSocketTest {
 		inputStream.read(bytes);
 		String strJson = new String(bytes, "UTF-8");
 
-		logger.info("<客户端<--接收消息> msg=\n"+ strJson);
+		logger.info("<客户端<--接收消息> msg=\n" + strJson);
 
 		JSONObject jo = JSONObject.parseObject(strJson);
 
@@ -128,13 +138,13 @@ public class ClientSocketTest {
 
 		case MessageType.MESSAGE_TYPE_LOGIN:
 			LoginMessage loginMsg = JSON.toJavaObject(jo, LoginMessage.class);
-			//logger.debug("receiveMessage json=" + strJson);
+			// logger.debug("receiveMessage json=" + strJson);
 
 		case MessageType.MESSAGE_TYPE_TALK:
 			TalkMessage talkMsg = JSON.toJavaObject(jo, TalkMessage.class);
 
 		}
-		
+
 		return true;
 
 	}
