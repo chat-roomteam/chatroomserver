@@ -8,6 +8,26 @@ public class Talk  implements Serializable{
 	private String id;
 	private long timestamp;
 	private String userId;
+	private String studentID;
+	private String userName;
+
+	
+	public String getStudentID() {
+		return studentID;
+	}
+
+	public void setStudentID(String studentID) {
+		this.studentID = studentID;
+	}
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
 	private String ip;
 	private String roomId;
 	private String content;

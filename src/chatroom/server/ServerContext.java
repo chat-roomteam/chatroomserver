@@ -27,24 +27,23 @@ import chatroom.model.User;
 public class ServerContext {
 	private static Logger logger = Logger.getLogger(ServerContext.class);
 	private final static ServerContext instance = new ServerContext();
-	
-	//public MessageHandler messageHandler=new MessageHandler();
+
+	// public MessageHandler messageHandler=new MessageHandler();
 
 	// 服务端ServerSocket
 	private ServerSocket server;
-	
-	//所有房间 roomId,room
-	public Map<String,Room> rooms=new HashMap<String,Room>();
-	
-	//所有用户 StudentID，user
-	public Map<String,User> users=new HashMap<String,User>();
-	
-	//所有房间的对话 roomId List
-	public Map<String,List<Talk>> roomtalks=new HashMap();
-	
+
+	// 所有房间 roomId,room
+	public Map<String, Room> rooms = new HashMap<String, Room>();
+
+	// 所有用户 StudentID，user
+	public Map<String, User> users = new HashMap<String, User>();
+
+	// 所有房间的对话 roomId List
+	public Map<String, List<Talk>> roomtalks = new HashMap<String, List<Talk>> ();
+
 	// 所有会话
-	public List<Session> sessionList = new ArrayList();
- 
+	public List<Session> sessionList = new ArrayList<Session>();
 
 	/**
 	 * 私有构造器，防止外部实例化
@@ -57,11 +56,16 @@ public class ServerContext {
 		return instance;
 	}
 
+	/**
+	 * 初始化服务器
+	 * @param serverSocket
+	 * @throws IOException
+	 */
 	public void initServer(ServerSocket serverSocket) throws IOException {
 		this.server = serverSocket;
 		initChatRooms();
 		initUsers();
-
+		//阻塞，等待客户端连接
 		while (true) {
 			// 从请求队列中取出一个连接
 			Socket client = serverSocket.accept();
@@ -72,59 +76,55 @@ public class ServerContext {
 
 	/**
 	 * 从服务器配置文件中读取房间清单
+	 * 
+	 * @throws IOException
 	 */
-	private void initChatRooms() {
-		try {
-			String str = FileUtils.readJsonFile("./data/rooms.json");
-			
-			List<Room> roomList=new ArrayList<Room>(JSONArray.parseArray(str,Room.class));
-			
-			for(Room room : roomList) { 
-				rooms.put(room.getId(), room);
-				
-			    //System.out.println(room.toJsonString());
-			}
-			
-			logger.debug("init rooms, size= : " + roomList.size());
-		} catch (IOException e) {
-			logger.error("initChatRooms error: ", e);
-		}
-	}
-	
-	/**
-	 * 从服务器配置文件中读取房间清单
-	 */
-	private void initUsers() {
-		try {
-			String str = FileUtils.readJsonFile("./data/users.json");
-			
-			List<User> userList=new ArrayList<User>(JSONArray.parseArray(str,User.class));
-			
-			for(User user : userList) { 
-				users.put(user.getStudentID(), user);
-			    //System.out.println(user.toJsonString());
-			}
-			
-			logger.debug("init users, size= : " + userList.size());
-		} catch (IOException e) {
-			logger.error("initUsers error: ", e);
+	private void initChatRooms() throws IOException {
+		String str = FileUtils.readJsonFile("./data/rooms.json");
+		// 从配置文件中读取房间清单
+		List<Room> roomList = new ArrayList<Room>(JSONArray.parseArray(str, Room.class));
+
+		for (Room room : roomList) {
+			// 初始化房间状态
+			room.setOnlineNumber(0);
+			// 0为无对话时间
+			room.setLastTalkTime(0);
+			rooms.put(room.getId(), room);
 		}
 	}
 
-	
+	/**
+	 * 从服务器配置文件中读取房间清单
+	 * 
+	 * @throws IOException
+	 */
+	private void initUsers() throws IOException {
+		String str = FileUtils.readJsonFile("./data/users.json");
+		List<User> userList = new ArrayList<User>(JSONArray.parseArray(str, User.class));
+		for (User user : userList) {
+			users.put(user.getStudentID(), user);
+		}
+	}
+
 	/**
 	 * 打开会话
 	 */
 	public void openSession(Socket client) {
+		//初始化session时，开启新线程
 		Session sessionNew = new Session(client);
+		//加入到会话队列中
 		sessionList.add(sessionNew);
+		
+		logger.info("【打开session】");
 	}
 
 	/**
 	 * 关闭会话
 	 */
 	public void closeSession(Session session) {
+		//从队列中删除
 		sessionList.remove(session);
+		
 	}
 
 }
