@@ -175,6 +175,11 @@ public class MessageHandler {
 
 	}
 
+	/**
+	 * 接受消息
+	 * @param session
+	 * @throws IOException
+	 */
 	public void receiveMessage(Session session) throws IOException {
 		try {
 			InputStream inputStream = session.getClient().getInputStream();
