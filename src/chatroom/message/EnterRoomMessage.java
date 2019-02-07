@@ -41,9 +41,7 @@ public class EnterRoomMessage  extends BaseMessage{
 		this.user = user;
 	}
 
-	public void setType(String type) {
-		this.type = type;
-	}
+ 
 	
 	
 }

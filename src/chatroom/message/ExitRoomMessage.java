@@ -41,8 +41,6 @@ private String roomId;
 		this.user = user;
 	}
 
-	public void setType(String type) {
-		this.type = type;
-	}
+	 
 
 }

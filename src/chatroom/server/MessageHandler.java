@@ -196,12 +196,14 @@ public class MessageHandler {
 			// 然后读取指定长度的消息即可
 			inputStream.read(bytes);
 			String strJson = new String(bytes, "UTF-8");
-			logger.debug("receiveMessage json=" + strJson);
+			
 
 			JSONObject jo = JSONObject.parseObject(strJson);
 
 			String type = jo.getString("type");
-
+			
+			logger.debug("【服务器收到消息】type="+type +"消息内容=" + strJson);
+			
 			switch (type) {
 			
 			//登录

@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
@@ -12,10 +13,13 @@ import org.apache.log4j.Logger;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
+import chatroom.message.EnterRoomMessage;
+import chatroom.message.ExitRoomMessage;
 import chatroom.message.IMessageProtocol;
 import chatroom.message.LoginMessage;
 import chatroom.message.MessageType;
 import chatroom.message.TalkMessage;
+import chatroom.model.Talk;
 import chatroom.model.User;
 
 public class ClientSocketTest {
@@ -57,21 +61,44 @@ public class ClientSocketTest {
 		this.sendMessage(loginMessage);
 
 		// 登录失败
-		//loginMessage.setPassword("");
-		//this.sendMessage(loginMessage);
+		// loginMessage.setPassword("");
+		// this.sendMessage(loginMessage);
 
 		// 进入房间
+		EnterRoomMessage enterRoomMessage = new EnterRoomMessage();
+		enterRoomMessage.setRoomId("100");
+		enterRoomMessage.setUser(user);
+		this.sendMessage(enterRoomMessage);
+
+		// 退出房间
+		// ExitRoomMessage exitRoomMessage=new ExitRoomMessage();
+		// exitRoomMessage.setRoomId("100");
+		// exitRoomMessage.setUser(user);
+
+		// 说话
+		TalkMessage talkMessage = new TalkMessage();
+		talkMessage.setId(UUID.randomUUID().toString());
+		Talk talk = new Talk();
+		talk.setId(UUID.randomUUID().toString());
+		talk.setContent("我是" + user.getName() + ",我的学号是" + user.getStudentID() + ",现在时间是"
+				+ new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new java.util.Date()));
+		talk.setRoomId("100");
+		talk.setStudentID(user.getStudentID());
+		talk.setUserId(user.getId());
+		talkMessage.setTalk(talk);
+		
+		this.sendMessage(talkMessage);
 
 	}
 
 	public static void main(String args[]) throws Exception {
-		String studentID="2019001";
-				
-		if(args.length>0)
-			studentID=args[0];
-		
+		String studentID = "2019001";
+
+		if (args.length > 0)
+			studentID = args[0];
+
 		ClientSocketTest clientSocketTest = new ClientSocketTest(studentID);
-		
+
 		clientSocketTest.test();
 	}
 
@@ -90,7 +117,7 @@ public class ClientSocketTest {
 		outputStream.write(msg.jsonBytes());
 		outputStream.flush();
 
-		logger.info("<客户端发送-->消息> msg=\n" + msg.toJsonString());
+		logger.info("发送消息------>>>> type=" + msg.getType() + "  msg=" + msg.toJsonString());
 
 	}
 
@@ -128,11 +155,11 @@ public class ClientSocketTest {
 		inputStream.read(bytes);
 		String strJson = new String(bytes, "UTF-8");
 
-		logger.info("<客户端<--接收消息> msg=\n" + strJson);
-
 		JSONObject jo = JSONObject.parseObject(strJson);
 
 		String type = jo.getString("type");
+
+		logger.info("接收消息<<<------ type=" + type + " msg=" + strJson);
 
 		switch (type) {
 
