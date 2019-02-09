@@ -9,7 +9,7 @@ import chatroom.model.*;
 
 public  class RoomListMessage  extends BaseMessage  {
 
-	public List<Room> getRooms() {
+	public  List<Room> getRooms() {
 		return rooms;
 	}
 

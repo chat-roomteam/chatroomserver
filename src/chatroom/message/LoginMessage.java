@@ -42,7 +42,7 @@ public class LoginMessage extends BaseMessage {
 		this.loginTimes = loginTimes;
 	}
 
-	public boolean isLoginResult() {
+	public boolean getLoginResult() {
 		return loginResult;
 	}
 

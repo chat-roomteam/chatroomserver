@@ -1,3 +1,5 @@
 eclipse.preferences.version=1
+encoding//data/rooms.json=UTF-8
+encoding//data/users.json=UTF-8
 encoding//src/chatroom/message/IMessageProtocol.java=UTF-8
 encoding/<project>=UTF-8

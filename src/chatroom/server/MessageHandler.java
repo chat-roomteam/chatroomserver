@@ -52,6 +52,10 @@ public class MessageHandler {
 			loginMessage.setLoginResult(true);
 			// 设置会话登录状态
 			session.setLogin(true);
+			
+			
+			loginMessage.setName(user.getName());
+		
 			loginMessage.setPassword(null);
 			// 发送登录成功信息
 			sendMessage(session, loginMessage);
@@ -157,6 +161,7 @@ public class MessageHandler {
 	 * @throws IOException
 	 */
 	public void broadcastMessage(IMessageProtocol message) throws IOException {
+		logger.debug("【广播消息】 类型="+message.getType());
 		for (Session session : serverContext.sessionList) {
 			sendMessage(session, message);
 		}
@@ -172,6 +177,8 @@ public class MessageHandler {
 		outputStream.write(msg.jsonByteLen());
 		outputStream.write(msg.jsonBytes());
 		outputStream.flush();
+		
+		logger.debug("【发送消息】类型="+msg.getType()+" msg="+msg.toJsonString());
 
 	}
 
