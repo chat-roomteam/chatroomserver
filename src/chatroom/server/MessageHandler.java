@@ -17,6 +17,7 @@ import chatroom.message.IMessageProtocol;
 import chatroom.message.LoginMessage;
 import chatroom.message.MessageType;
 import chatroom.message.RoomListMessage;
+import chatroom.message.RoomStautsMessage;
 import chatroom.message.TalkMessage;
 import chatroom.model.Room;
 import chatroom.model.User;
@@ -52,10 +53,9 @@ public class MessageHandler {
 			loginMessage.setLoginResult(true);
 			// 设置会话登录状态
 			session.setLogin(true);
-			
-			
+
 			loginMessage.setName(user.getName());
-		
+
 			loginMessage.setPassword(null);
 			// 发送登录成功信息
 			sendMessage(session, loginMessage);
@@ -63,13 +63,14 @@ public class MessageHandler {
 			logger.info("【登录成功】-->user name=" + loginMessage.getName() + " 学号=" + loginMessage.getStudentID());
 
 			// 再发送房间清单
-			RoomListMessage roomListMessage = new RoomListMessage();
-
-			List<Room> list = new ArrayList<Room>();
-			list.addAll(serverContext.rooms.values());
-			roomListMessage.setRooms(list);
-
-			sendMessage(session, roomListMessage);
+			/*
+			 * RoomListMessage roomListMessage = new RoomListMessage();
+			 * 
+			 * List<Room> list = new ArrayList<Room>();
+			 * list.addAll(serverContext.rooms.values()); roomListMessage.setRooms(list);
+			 * 
+			 * sendMessage(session, roomListMessage);
+			 */
 
 		} else {
 			loginMessage.setLoginResult(false);
@@ -161,7 +162,7 @@ public class MessageHandler {
 	 * @throws IOException
 	 */
 	public void broadcastMessage(IMessageProtocol message) throws IOException {
-		logger.debug("【广播消息】 类型="+message.getType());
+		logger.debug("【广播消息】 类型=" + message.getType());
 		for (Session session : serverContext.sessionList) {
 			sendMessage(session, message);
 		}
@@ -177,13 +178,14 @@ public class MessageHandler {
 		outputStream.write(msg.jsonByteLen());
 		outputStream.write(msg.jsonBytes());
 		outputStream.flush();
-		
-		logger.debug("【发送消息】类型="+msg.getType()+" msg="+msg.toJsonString());
+
+		logger.debug("【发送消息】类型=" + msg.getType() + " msg=" + msg.toJsonString());
 
 	}
 
 	/**
 	 * 接受消息
+	 * 
 	 * @param session
 	 * @throws IOException
 	 */
@@ -208,35 +210,51 @@ public class MessageHandler {
 			// 然后读取指定长度的消息即可
 			inputStream.read(bytes);
 			String strJson = new String(bytes, "UTF-8");
-			
 
 			JSONObject jo = JSONObject.parseObject(strJson);
 
 			String type = jo.getString("type");
-			
-			logger.debug("【服务器收到消息】type="+type +"消息内容=" + strJson);
-			
+
+			logger.debug("【服务器收到消息】type=" + type + "消息内容=" + strJson);
+
 			switch (type) {
-			
-			//登录
+
+			// 登录
 			case MessageType.MESSAGE_TYPE_LOGIN:
 				LoginMessage loginMsg = JSON.toJavaObject(jo, LoginMessage.class);
 				loginMsg.setTimestamp(System.currentTimeMillis());
 				this.login(session, loginMsg);
 				break;
-				//进入房间
+			// 请求房间列表
+			case MessageType.MESSAGE_TYPE_ROOMSLIST:
+				RoomListMessage roomListMsg = new RoomListMessage();
+				List<Room> list = new ArrayList<Room>();
+				list.addAll(serverContext.rooms.values());
+				roomListMsg.setRooms(list);
+				sendMessage(session, roomListMsg);
+				break;
+			// 进入房间
 			case MessageType.MESSAGE_TYPE_ENTERROOM:
-				EnterRoomMessage enterRoomMsg=  JSON.toJavaObject(jo, EnterRoomMessage.class);
+				EnterRoomMessage enterRoomMsg = JSON.toJavaObject(jo, EnterRoomMessage.class);
 				enterRoomMsg.setTimestamp(System.currentTimeMillis());
 				this.enterRoom(session, enterRoomMsg);
 				break;
-			//退出房间
-				case MessageType.MESSAGE_TYPE_EXITROOM:
-					ExitRoomMessage exitRoomMsg=  JSON.toJavaObject(jo, ExitRoomMessage.class);
-					exitRoomMsg.setTimestamp(System.currentTimeMillis());
-					this.exitRoom(session, exitRoomMsg);
-					break;
-		    //说话
+			// 请求房间状态
+			case MessageType.MESSAGE_TYPE_ROOMSTAUTS:
+				RoomStautsMessage roomStautsMsg= JSON.toJavaObject(jo, RoomStautsMessage.class);
+				roomStautsMsg.setTimestamp(System.currentTimeMillis());
+				sendMessage(session, roomStautsMsg);
+				break;
+			// 退出房间
+			case MessageType.MESSAGE_TYPE_EXITROOM:
+				ExitRoomMessage exitRoomMsg = JSON.toJavaObject(jo, ExitRoomMessage.class);
+				//exitRoomMsg.setTimestamp(System.currentTimeMillis());
+				//exitRoomMsg.setRoomId();
+				//exitRoomMsg.setUser();
+				this.exitRoom(session, exitRoomMsg);
+			//	sendMessage(session, exitRoomMsg);
+				break;
+			// 说话
 			case MessageType.MESSAGE_TYPE_TALK:
 				TalkMessage talkMsg = JSON.toJavaObject(jo, TalkMessage.class);
 				// talkMsg.getTalk().setTimestamp(System.currentTimeMillis());

@@ -2,15 +2,13 @@ package chatroom.message;
 
 import chatroom.model.User;
 
-public class ExitRoomMessage  extends BaseMessage{
-
-	@Override
+public class RoomStautsMessage extends BaseMessage {
 	public String getType() {
 		return type;
 	}
 	
-	private String type=MessageType.MESSAGE_TYPE_EXITROOM;
-
+	private String type=MessageType.MESSAGE_TYPE_ROOMSTAUTS;
+	
     private String roomId;
 	
 	private Long timestamp;
@@ -40,7 +38,5 @@ public class ExitRoomMessage  extends BaseMessage{
 	public void setUser(User user) {
 		this.user = user;
 	}
-
-	 
 
 }
