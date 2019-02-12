@@ -1,5 +1,8 @@
 package chatroom.message;
 
+import java.util.List;
+
+import chatroom.model.Talk;
 import chatroom.model.User;
 
 public class RoomStautsMessage extends BaseMessage {
@@ -13,7 +16,20 @@ public class RoomStautsMessage extends BaseMessage {
 	
 	private Long timestamp;
 	
-	private User user;
+	private List<User> users;
+	
+	private List<Talk> talks;
+	
+	
+	public List<Talk> getTalks() {
+		return talks;
+	}
+
+	public void setTalks(List<Talk> talks) {
+		this.talks = talks;
+	}
+
+	
 
 	public String getRoomId() {
 		return roomId;
@@ -31,12 +47,13 @@ public class RoomStautsMessage extends BaseMessage {
 		this.timestamp = timestamp;
 	}
 
-	public User getUser() {
-		return user;
+	public List<User> getUsers() {
+		return users;
 	}
 
-	public void setUser(User user) {
-		this.user = user;
+	public void setUsers(List<User> users) {
+		this.users = users;
 	}
 
+	
 }

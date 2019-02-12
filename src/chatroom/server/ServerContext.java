@@ -41,6 +41,10 @@ public class ServerContext {
 
 	// 所有房间的对话 roomId List
 	public Map<String, List<Talk>> roomtalks = new HashMap<String, List<Talk>> ();
+	
+	//所有房间的用户 roomId,List
+	public Map<String,List<User>> roomUsers=new HashMap<String,List<User>>();
+	
 
 	// 所有会话
 	public List<Session> sessionList = new ArrayList<Session>();

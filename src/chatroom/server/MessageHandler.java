@@ -20,6 +20,7 @@ import chatroom.message.RoomListMessage;
 import chatroom.message.RoomStautsMessage;
 import chatroom.message.TalkMessage;
 import chatroom.model.Room;
+import chatroom.model.Talk;
 import chatroom.model.User;
 
 /**
@@ -93,9 +94,16 @@ public class MessageHandler {
 		String roomId = enterRoomMessage.getRoomId();
 		Room room = this.serverContext.rooms.get(roomId);
 
+		User user = enterRoomMessage.getUser();
+
 		if (room != null) {
 			room.setOnlineNumber(room.getOnlineNumber() + 1);
 		}
+
+		// 获得了房间的用户清单
+		List<User> userList = serverContext.roomUsers.get(roomId);
+		// 增加用户
+		userList.add(user);
 
 		logger.info("【进入房间】-->user name=" + enterRoomMessage.getUser().getName() + " roomId="
 				+ enterRoomMessage.getRoomId() + " 在线人数=" + room.getOnlineNumber());
@@ -118,6 +126,13 @@ public class MessageHandler {
 		if (room != null) {
 			room.setOnlineNumber(room.getOnlineNumber() - 1 < 0 ? 0 : room.getOnlineNumber() - 1);
 		}
+
+		User user = exitRoomMessage.getUser();
+
+		// 获得了房间的用户清单
+		List<User> userList = serverContext.roomUsers.get(roomId);
+		// 删除用户
+		userList.remove(user);
 
 		logger.info(
 				"【退出房间】-->user name=" + exitRoomMessage.getUser().getName() + " roomId=" + exitRoomMessage.getRoomId()
@@ -241,24 +256,34 @@ public class MessageHandler {
 				break;
 			// 请求房间状态
 			case MessageType.MESSAGE_TYPE_ROOMSTAUTS:
-				RoomStautsMessage roomStautsMsg= JSON.toJavaObject(jo, RoomStautsMessage.class);
+				RoomStautsMessage roomStautsMsg = JSON.toJavaObject(jo, RoomStautsMessage.class);
 				roomStautsMsg.setTimestamp(System.currentTimeMillis());
+				String roomId=roomStautsMsg.getRoomId();
+				//房间用户清单
+				roomStautsMsg.setUsers(serverContext.roomUsers.get(roomId));
+				//对话清单
+				roomStautsMsg.setTalks(serverContext.roomtalks.get(roomId));
+				
 				sendMessage(session, roomStautsMsg);
 				break;
 			// 退出房间
 			case MessageType.MESSAGE_TYPE_EXITROOM:
 				ExitRoomMessage exitRoomMsg = JSON.toJavaObject(jo, ExitRoomMessage.class);
-				//exitRoomMsg.setTimestamp(System.currentTimeMillis());
-				//exitRoomMsg.setRoomId();
-				//exitRoomMsg.setUser();
+				// exitRoomMsg.setTimestamp(System.currentTimeMillis());
+				// exitRoomMsg.setRoomId();
+				// exitRoomMsg.setUser();
 				this.exitRoom(session, exitRoomMsg);
-			//	sendMessage(session, exitRoomMsg);
+				// sendMessage(session, exitRoomMsg);
 				break;
 			// 说话
 			case MessageType.MESSAGE_TYPE_TALK:
 				TalkMessage talkMsg = JSON.toJavaObject(jo, TalkMessage.class);
-				// talkMsg.getTalk().setTimestamp(System.currentTimeMillis());
-
+				String talkRoomId=talkMsg.getTalk().getRoomId();
+				Talk talk=talkMsg.getTalk();
+				talk.setTimestamp(System.currentTimeMillis());
+				List<Talk> talks=serverContext.roomtalks.get(talkRoomId);
+				talks.add(talk);
+				this.broadcastMessage(talkMsg);
 			}
 
 		} catch (IOException e) {
