@@ -30,7 +30,7 @@ import chatroom.model.User;
  *
  */
 public class MessageHandler {
-
+	public Room room;
 	private static Logger logger = Logger.getLogger(MessageHandler.class);
 
 	private ServerContext serverContext = ServerContext.getInstance();
@@ -92,7 +92,7 @@ public class MessageHandler {
 	 */
 	public void enterRoom(Session session, EnterRoomMessage enterRoomMessage) throws IOException {
 		String roomId = enterRoomMessage.getRoomId();
-		Room room = this.serverContext.rooms.get(roomId);
+		room = this.serverContext.rooms.get(roomId);
 
 		User user = enterRoomMessage.getUser();
 
@@ -101,6 +101,7 @@ public class MessageHandler {
 		}
 
 		// 获得了房间的用户清单
+		serverContext.roomUsers.put(roomId,new ArrayList());
 		List<User> userList = serverContext.roomUsers.get(roomId);
 		// 增加用户
 		userList.add(user);
@@ -120,8 +121,8 @@ public class MessageHandler {
 	 * @throws IOException
 	 */
 	public void exitRoom(Session session, ExitRoomMessage exitRoomMessage) throws IOException {
-		String roomId = exitRoomMessage.getRoomId();
-		Room room = this.serverContext.rooms.get(roomId);
+		String roomId = room.getId();
+		//Room room = this.serverContext.rooms.get(roomId);
 		// 更新在线人数
 		if (room != null) {
 			room.setOnlineNumber(room.getOnlineNumber() - 1 < 0 ? 0 : room.getOnlineNumber() - 1);
@@ -130,13 +131,14 @@ public class MessageHandler {
 		User user = exitRoomMessage.getUser();
 
 		// 获得了房间的用户清单
+		serverContext.roomUsers.put(roomId,new ArrayList());
 		List<User> userList = serverContext.roomUsers.get(roomId);
 		// 删除用户
 		userList.remove(user);
 
 		logger.info(
-				"【退出房间】-->user name=" + exitRoomMessage.getUser().getName() + " roomId=" + exitRoomMessage.getRoomId()
-						+ " roomId=" + exitRoomMessage.getRoomId() + " 在线人数=" + room.getOnlineNumber());
+				"【退出房间】-->user name=" + exitRoomMessage.getUser().getName() 
+						+ " roomId=" + roomId + " 在线人数=" + room.getOnlineNumber());
 		// 广播
 		this.broadcastMessage(exitRoomMessage);
 	}
@@ -159,6 +161,7 @@ public class MessageHandler {
 
 		if (null != this.serverContext.roomtalks.get(roomId)) {
 			// 加入到访问的对话list中
+			serverContext.roomtalks.put(roomId,new ArrayList());
 			this.serverContext.roomtalks.get(roomId).add(talkMessage.getTalk());
 		}
 
@@ -166,7 +169,7 @@ public class MessageHandler {
 		this.broadcastMessage(talkMessage);
 
 		logger.info("【说话】-->user name=" + talkMessage.getTalk().getUserName() + " room id="
-				+ talkMessage.getTalk().getRoomId() + " 内容：" + talkMessage.getTalk().getContent());
+				+ room.getId() + " 内容：" + talkMessage.getTalk().getContent());
 
 	}
 
@@ -269,21 +272,17 @@ public class MessageHandler {
 			// 退出房间
 			case MessageType.MESSAGE_TYPE_EXITROOM:
 				ExitRoomMessage exitRoomMsg = JSON.toJavaObject(jo, ExitRoomMessage.class);
-				// exitRoomMsg.setTimestamp(System.currentTimeMillis());
-				// exitRoomMsg.setRoomId();
-				// exitRoomMsg.setUser();
 				this.exitRoom(session, exitRoomMsg);
-				// sendMessage(session, exitRoomMsg);
 				break;
 			// 说话
 			case MessageType.MESSAGE_TYPE_TALK:
 				TalkMessage talkMsg = JSON.toJavaObject(jo, TalkMessage.class);
-				String talkRoomId=talkMsg.getTalk().getRoomId();
 				Talk talk=talkMsg.getTalk();
 				talk.setTimestamp(System.currentTimeMillis());
-				List<Talk> talks=serverContext.roomtalks.get(talkRoomId);
-				talks.add(talk);
-				this.broadcastMessage(talkMsg);
+				
+				//List<Talk> talks=serverContext.roomtalks.get(talkRoomId);
+				//talks.add(talk);
+				this.talk(session, talkMsg);
 			}
 
 		} catch (IOException e) {

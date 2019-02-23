@@ -7,6 +7,8 @@ public class TalkMessage extends BaseMessage {
 	private String id;
 
 	private Talk talk;
+	
+	private String roomId;
 
 	public Talk getTalk() {
 		return talk;
@@ -24,9 +26,16 @@ public class TalkMessage extends BaseMessage {
 		this.id = id;
 	}
 
-	@Override
 	public String getType() {
 		return this.type;
+	}
+
+	public String getRoomId() {
+		return roomId;
+	}
+
+	public void setRoomId(String roomId) {
+		this.roomId = roomId;
 	}
 
 	private String type = MessageType.MESSAGE_TYPE_TALK;
